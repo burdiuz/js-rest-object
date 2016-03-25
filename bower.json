@@ -1,0 +1,47 @@
+{
+  "name": "rest-object",
+  "description": "",
+  "version": "0.0.1",
+  "main": [
+    "dist/rest-object.min.js"
+  ],
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "license": "MIT",
+  "authors": [
+    "Oleg Galaburda <burdiuz@gmail.com> (http://actualwave.com/)"
+  ],
+  "ignore": [
+    "**/.*",
+    "source",
+    "tests",
+    "gulpfile.js",
+    "karma.conf.js",
+    "package.json",
+    "server.js",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "keywords": [
+    "data",
+    "access",
+    "deferred",
+    "promise"
+  ],
+  "homepage": "https://github.com/burdiuz/js-rest-object",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/burdiuz/js-rest-object.git"
+  },
+  "dependencies": {
+    "event-dispatcher": "git://github.com/burdiuz/js-event-dispatcher.git",
+    "deferred-data-access": "git://github.com/burdiuz/js-deferred-data-access.git"
+  },
+  "devDependencies": {
+    "jquery": "~2.2.2"
+  }
+}
