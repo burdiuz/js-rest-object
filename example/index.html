@@ -9,7 +9,7 @@
   <script type="text/javascript" src="../bower_components/deferred-data-access/dist/data-access-interface.js"></script>
   <script type="text/javascript" src="../source/rest-object.js"></script>
   <script type="text/javascript">
-    var api = createRESTObject('/');
+    var api = RESTObject.create('/');
     api.example.api.users.customers[1234].then(
         function(data) {
           console.log(data);

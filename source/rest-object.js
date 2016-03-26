@@ -21,8 +21,6 @@ var CommandDescriptor = DataAccessInterface.CommandDescriptor;
 var ProxyCommands = DataAccessInterface.ProxyCommands;
 var RequestTarget = DataAccessInterface.RequestTarget;
 
-
-var descriptors;
 ResourcePool.setValidTargets(
   ResourcePool.getDefaultValidTargets().concat([typeof('')])
 );
@@ -35,6 +33,13 @@ var Commands = Object.freeze({
   DELETE: 'delete',
   ROUTE: 'route',
   PREVENT_DEFAULT: 'preventDefault'
+});
+
+var Methods = Object.freeze({
+  CREATE: 'PUT',
+  READ: 'GET',
+  UPDATE: 'POST',
+  DELETE: 'DELETE'
 });
 
 /**
@@ -89,88 +94,6 @@ function getChildRouteResource(request, path) {
  * @param {Object} pack
  * @param {Deferred} deferred
  */
-function createHandler(parentRequest, pack, deferred) {
-  var url = getRoute(parentRequest, pack.cmd);
-  jQuery.ajax({
-    method: 'PUT',
-    url: url,
-    data: pack.value,
-    dataType: 'json',
-    success: function(data) {
-      deferred.resolve(data);
-    },
-    error: function(xhr) {
-      deferred.reject(xhr);
-    }
-  });
-}
-
-/**
- * @param {RequestTarget} parentRequest
- * @param {Object} pack
- * @param {Deferred} deferred
- */
-function readHandler(parentRequest, pack, deferred) {
-  var url = getRoute(parentRequest, pack.cmd);
-  jQuery.ajax({
-    method: 'GET',
-    url: url,
-    dataType: 'json',
-    success: function(data) {
-      deferred.resolve(data);
-    },
-    error: function(xhr) {
-      deferred.reject(xhr);
-    }
-  });
-}
-
-/**
- * @param {RequestTarget} parentRequest
- * @param {Object} pack
- * @param {Deferred} deferred
- */
-function updateHandler(parentRequest, pack, deferred) {
-  var url = getRoute(parentRequest, pack.cmd);
-  jQuery.ajax({
-    method: 'POST',
-    url: url,
-    data: pack.value,
-    dataType: 'json',
-    success: function(data) {
-      deferred.resolve(data);
-    },
-    error: function(xhr) {
-      deferred.reject(xhr);
-    }
-  });
-}
-
-/**
- * @param {RequestTarget} parentRequest
- * @param {Object} pack
- * @param {Deferred} deferred
- */
-function deleteHandler(parentRequest, pack, deferred) {
-  var url = getRoute(parentRequest, pack.cmd);
-  jQuery.ajax({
-    method: 'DELETE',
-    url: url,
-    dataType: 'json',
-    success: function(data) {
-      deferred.resolve(data);
-    },
-    error: function(xhr) {
-      deferred.reject(xhr);
-    }
-  });
-}
-
-/**
- * @param {RequestTarget} parentRequest
- * @param {Object} pack
- * @param {Deferred} deferred
- */
 function routeHandler(parentRequest, pack, deferred) {
   deferred.resolve(getChildRouteResource(
     parentRequest, pack.cmd
@@ -191,27 +114,68 @@ function preventDefault(parentRequest, pack, deferred) {
 }
 
 /**
+ * @param {Function} ajaxHandler
  * @param {RequestTarget} parentRequest
  * @param {Object} pack
  * @param {Deferred} deferred
- * @param {RequestTarget} resultRequest
  */
-function getHandler(parentRequest, pack, deferred, resultRequest) {
-  if (RequestTarget.getQueueLength(resultRequest)) { // RESOURCE/ ROUTE
-    routeHandler(parentRequest, pack, deferred, resultRequest);
-  } else { // READ
-    readHandler(parentRequest, pack, deferred, resultRequest);
-  }
+function createHandler(ajaxHandler, parentRequest, pack, deferred) {
+  var url = getRoute(parentRequest, pack.cmd);
+  ajaxHandler(
+    Methods.CREATE,
+    url,
+    pack.value,
+    deferred
+  );
 }
 
-descriptors = [
-  CommandDescriptor.create(Commands.CREATE, createHandler),
-  CommandDescriptor.create(Commands.READ, readHandler),
-  CommandDescriptor.create(Commands.UPDATE, updateHandler),
-  CommandDescriptor.create(Commands.DELETE, deleteHandler),
-  CommandDescriptor.create(Commands.ROUTE, routeHandler),
-  CommandDescriptor.create(Commands.PREVENT_DEFAULT, preventDefault)
-];
+/**
+ * @param {Function} ajaxHandler
+ * @param {RequestTarget} parentRequest
+ * @param {Object} pack
+ * @param {Deferred} deferred
+ */
+function readHandler(ajaxHandler, parentRequest, pack, deferred) {
+  var url = getRoute(parentRequest, pack.cmd);
+  ajaxHandler(
+    Methods.READ,
+    url,
+    pack.value,
+    deferred
+  );
+}
+
+/**
+ * @param {Function} ajaxHandler
+ * @param {RequestTarget} parentRequest
+ * @param {Object} pack
+ * @param {Deferred} deferred
+ */
+function updateHandler(ajaxHandler, parentRequest, pack, deferred) {
+  var url = getRoute(parentRequest, pack.cmd);
+  ajaxHandler(
+    Methods.UPDATE,
+    url,
+    pack.value,
+    deferred
+  );
+}
+
+/**
+ * @param {Function} ajaxHandler
+ * @param {RequestTarget} parentRequest
+ * @param {Object} pack
+ * @param {Deferred} deferred
+ */
+function deleteHandler(ajaxHandler, parentRequest, pack, deferred) {
+  var url = getRoute(parentRequest, pack.cmd);
+  ajaxHandler(
+    Methods.DELETE,
+    url,
+    pack.value,
+    deferred
+  );
+}
 
 function handleWithTimeout(handler) {
   function _handle(parentRequest, pack, deferred, resultRequest) {
@@ -221,17 +185,95 @@ function handleWithTimeout(handler) {
   return _handle;
 }
 
-ProxyCommands.createDescriptors({
-  get: handleWithTimeout(getHandler),
-  set: updateHandler,
-  apply: createHandler,
-  deleteProperty: deleteHandler
-}, null, descriptors);
+/**
+ *
+ * @param {string} method
+ * @param {string} url
+ * @param {*} data
+ * @param {Deferred} deferred
+ */
+function jQueryAjaxHandler(method, url, data, deferred) {
+  jQuery.ajax({
+    method: RESTObject.Methods[method],
+    url: url,
+    data: data,
+    dataType: 'json',
+    success: deferred.resolve,
+    error: deferred.reject
+  });
+}
 
-var dai = DataAccessInterface.create(descriptors, true);
+/**
+ *
+ * @param {string} method
+ * @param {string} url
+ * @param {*} data
+ * @param {Deferred} deferred
+ */
+function fetchAjaxHandler(method, url, data, deferred) {
+  fetch(url, {
+    method: RESTObject.Methods[method],
+    body: JSON.stringify(data)
+  }).then(
+    function(response) {
+      deferred.resolve(response.json());
+    },
+    function(response) {
+      deferred.reject(response.json());
+    }
+  );
+}
 
-function createRESTObject(path) {
+function create(path, ajaxHandler) {
+
+  var _create = createHandler.bind(null, ajaxHandler);
+  var _read   = readHandler.bind(null, ajaxHandler);
+  var _update = updateHandler.bind(null, ajaxHandler);
+  var _delete = deleteHandler.bind(null, ajaxHandler);
+
+  /**
+   * @param {RequestTarget} parentRequest
+   * @param {Object} pack
+   * @param {Deferred} deferred
+   * @param {RequestTarget} resultRequest
+   */
+  function _get(parentRequest, pack, deferred, resultRequest) {
+    if (RequestTarget.getQueueLength(resultRequest)) { // RESOURCE/ ROUTE
+      routeHandler(parentRequest, pack, deferred);
+    } else { // READ
+      _read(parentRequest, pack, deferred);
+    }
+  }
+
+  var descriptors = [
+    CommandDescriptor.create(Commands.CREATE, _create),
+    CommandDescriptor.create(Commands.READ,   _read),
+    CommandDescriptor.create(Commands.UPDATE, _update),
+    CommandDescriptor.create(Commands.DELETE, _delete),
+    CommandDescriptor.create(Commands.ROUTE,           routeHandler),
+    CommandDescriptor.create(Commands.PREVENT_DEFAULT, preventDefault)
+  ];
+
+  ProxyCommands.createDescriptors({
+               get: handleWithTimeout(_get),
+               set: _update,
+             apply: _create,
+    deleteProperty: _delete
+  }, null, descriptors);
+
+  ajaxHandler = ajaxHandler || RESTObject.FETCH;
+
+  var dai = DataAccessInterface.create(descriptors, true);
+
   // root path
-  var root = pool.set(path || '/');
+  var root = pool.set((path || typeof(path) === 'string') ? path : '/');
   return dai.parse(root.toJSON());
 }
+
+RESTObject = Object.freeze({
+  create: create,
+  JQUERY: jQueryAjaxHandler,
+  FETCH: fetchAjaxHandler,
+  Commands: Commands,
+  Methods: Methods
+});
