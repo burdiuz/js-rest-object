@@ -30,7 +30,7 @@ var bodyParser = require('body-parser');
 
 var app = express();
 app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
+//app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
 
 app.get('/example/api/portal/users/customers', function(req, res) {
   var list = [];
@@ -47,6 +47,7 @@ app.get('/example/api/portal/users/customers', function(req, res) {
 
 app.put('/example/api/portal/users/customers', function(req, res) {
   var data = req.body;
+  console.log(req.body);
   if (data && data.name) {
     data.id = String(++lastId);
     customers[data.id] = data;
