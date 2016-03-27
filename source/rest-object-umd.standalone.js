@@ -18,7 +18,7 @@
     return EventDispatcher;
   })();
   var DataAccessInterface = (function() {
-    //=include ../node_modules/deferred-data-access/dist/data-access-interface.js
+    //=include ../node_modules/deferred-data-access/dist/data-access-interface.nowrap.js
     return DataAccessInterface;
   })();
   // here should be injected rest-object.js content

@@ -7,9 +7,9 @@ var rename = require('gulp-rename');
 var include = require('gulp-include');
 
 gulp.task('build', function() {
-  gulp.src('source/data-access-interface-umd.js')
+  gulp.src('source/rest-object-umd.js')
     .pipe(include())
-    .pipe(rename('data-access-interface.js'))
+    .pipe(rename('rest-object.js'))
     .pipe(gulp.dest('dist'))
     .pipe(uglify())
     .pipe(rename({suffix: '.min'}))
@@ -18,9 +18,9 @@ gulp.task('build', function() {
 });
 
 gulp.task('build-standalone', function() {
-  gulp.src('source/data-access-interface-umd.standalone.js')
+  gulp.src('source/rest-object-umd.standalone.js')
     .pipe(include())
-    .pipe(rename('data-access-interface.standalone.js'))
+    .pipe(rename('rest-object.standalone.js'))
     .pipe(gulp.dest('dist'))
     .pipe(uglify())
     .pipe(rename({suffix: '.min'}))
