@@ -10,10 +10,10 @@
     module.exports = factory(require('event-dispatcher'), require('deferred-data-access'));
   } else {
     // Browser globals (root is window)
-    root.createRESTObject = factory(root.EventDispatcher, root.DataAccessInterface);
+    root.RESTObject = factory(root.EventDispatcher, root.DataAccessInterface);
   }
 }(this, function(EventDispatcher, DataAccessInterface) {
   // here should be injected rest-object.js content
   //=include rest-object.js
-  return createRESTObject;
+  return RESTObject;
 }));

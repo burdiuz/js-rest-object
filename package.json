@@ -1,13 +1,16 @@
 {
   "name": "rest-object",
-  "description": "",
+  "description": "RESTObject allows remote data access via dot notation and operations with object properties instead of classic URL based actions.",
   "version": "0.0.1",
   "main": "dist/rest-object.min.js",
   "keywords": [
     "data",
     "access",
     "deferred",
-    "promise"
+    "promise",
+    "rest",
+    "fetch",
+    "ajax"
   ],
   "homepage": "https://github.com/burdiuz/js-rest-object",
   "bugs": {
@@ -25,6 +28,7 @@
     "deferred-data-access": "git://github.com/burdiuz/js-deferred-data-access.git"
   },
   "devDependencies": {
+    "body-parser": "^1.15.0",
     "chai": "^3.5.0",
     "express": "^4.13.3",
     "gulp": "^3.9.0",
