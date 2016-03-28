@@ -297,7 +297,7 @@ function handleWithTimeout(handler) {
  * @param {Deferred} deferred
  */
 function jQueryAjaxHandler(method, url, data, params, deferred) {
-  if(params){
+  if (params) {
     url += (url.indexOf('?') < 0 ? '?' : '&') + jQuery.param(params);
   }
   jQuery.ajax({
@@ -360,7 +360,7 @@ var fetchAjaxHandler = (function() {
   return fetchAjaxHandler;
 })();
 
-function create(path, ajaxHandler) {
+function create(path, ajaxHandler, proxyEnabled) {
   ajaxHandler = ajaxHandler || RESTObject.FETCH;
 
   var descriptors = [
@@ -379,7 +379,7 @@ function create(path, ajaxHandler) {
     deleteProperty: deletePropertyHandler.bind(null, ajaxHandler)
   }, null, descriptors);
 
-  var dai = DataAccessInterface.create(descriptors, true, new FakeResourcePoolRegistry(), null);
+  var dai = DataAccessInterface.create(descriptors, proxyEnabled !== false, new FakeResourcePoolRegistry(), null);
 
   // root path
   var root = pool.set((path || typeof(path) === 'string') ? path : '/');

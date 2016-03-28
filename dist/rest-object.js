@@ -199,7 +199,7 @@
   function createHandler(ajaxHandler, parentRequest, pack, deferred) {
     var target = pool.get(DataAccessInterface.getResourceId(parentRequest));
     var url = target.resource;
-    ajaxHandler(Commands.CREATE, url, pack.cmd, deferred);
+    ajaxHandler(Commands.CREATE, url, pack.cmd, pack.value, deferred);
   }
   
   /**
@@ -211,7 +211,7 @@
   function readHandler(ajaxHandler, parentRequest, pack, deferred) {
     var target = pool.get(DataAccessInterface.getResourceId(parentRequest));
     var url = target.resource;
-    ajaxHandler(Commands.READ, url, pack.cmd, deferred);
+    ajaxHandler(Commands.READ, url, pack.cmd, pack.value, deferred);
   }
   
   /**
@@ -223,7 +223,7 @@
   function updateHandler(ajaxHandler, parentRequest, pack, deferred) {
     var target = pool.get(DataAccessInterface.getResourceId(parentRequest));
     var url = target.resource;
-    ajaxHandler(Commands.UPDATE, url, pack.cmd, deferred);
+    ajaxHandler(Commands.UPDATE, url, pack.cmd, pack.value, deferred);
   }
   
   /**
@@ -235,7 +235,7 @@
   function deleteHandler(ajaxHandler, parentRequest, pack, deferred) {
     var target = pool.get(DataAccessInterface.getResourceId(parentRequest));
     var url = target.resource;
-    ajaxHandler(Commands.DELETE, url, pack.cmd, deferred);
+    ajaxHandler(Commands.DELETE, url, pack.cmd, pack.value, deferred);
   }
   
   /**
@@ -250,7 +250,7 @@
       routeHandler(parentRequest, pack, deferred);
     } else { // READ
       var url = getRoute(parentRequest, pack.cmd);
-      ajaxHandler(Commands.READ, url, pack.value, deferred);
+      ajaxHandler(Commands.READ, url, pack.value, null, deferred);
     }
   }
   
@@ -262,7 +262,7 @@
    */
   function setHandler(ajaxHandler, parentRequest, pack, deferred) {
     var url = getRoute(parentRequest, pack.cmd);
-    ajaxHandler(Commands.UPDATE, url, pack.value, deferred);
+    ajaxHandler(Commands.UPDATE, url, pack.value, null, deferred);
   }
   
   /**
@@ -274,10 +274,11 @@
   function applyHandler(ajaxHandler, parentRequest, pack, deferred) {
     var target = pool.get(DataAccessInterface.getResourceId(parentRequest));
     var url = target.resource;
-    if (pack.value.length === 1) {
-      ajaxHandler(Commands.CREATE, url, pack.value[0], deferred);
-    } else { // can be created a bulk upload and listened via Promise.all
-  
+    var length = pack.value.length;
+    if (length === 1) {
+      ajaxHandler(Commands.CREATE, url, pack.value[0], null, deferred);
+    } else if (length > 1) {
+      //TODO can be created a bulk upload and listened via Promise.all
     }
   }
   
@@ -289,7 +290,7 @@
    */
   function deletePropertyHandler(ajaxHandler, parentRequest, pack, deferred) {
     var url = getRoute(parentRequest, pack.cmd);
-    ajaxHandler(Commands.DELETE, url, pack.value, deferred);
+    ajaxHandler(Commands.DELETE, url, pack.value, null, deferred);
   }
   
   /**
@@ -311,11 +312,14 @@
    * @param {*} data
    * @param {Deferred} deferred
    */
-  function jQueryAjaxHandler(method, url, data, deferred) {
+  function jQueryAjaxHandler(method, url, data, params, deferred) {
+    if (params) {
+      url += (url.indexOf('?') < 0 ? '?' : '&') + jQuery.param(params);
+    }
     jQuery.ajax({
       method: RESTObject.HTTPMethods[method],
       url: url,
-      data: method === Commands.READ ? data : JSON.stringify(data),
+      data: data ? JSON.stringify(data) : null,
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       success: function(response) {
@@ -337,14 +341,14 @@
   var fetchAjaxHandler = (function() {
     var _fetchAjaxHeaders;
   
-    function serialize(obj) {
-      return '?' + Object.keys(obj).reduce(function(a, k) {
-          a.push(k + '=' + encodeURIComponent(obj[k]));
+    function serialize(url, obj) {
+      return url + (url.indexOf('?') < 0 ? '?' : '&') + Object.keys(obj).reduce(function(a, k) {
+          a.push(encodeURIComponent(k) + '=' + encodeURIComponent(obj[k]));
           return a;
         }, []).join('&');
     }
   
-    function fetchAjaxHandler(method, url, data, deferred) {
+    function fetchAjaxHandler(method, url, data, params, deferred) {
       if (!_fetchAjaxHeaders) {
         _fetchAjaxHeaders = new Headers();
         _fetchAjaxHeaders.append('Content-Type', 'application/json; charset=utf-8');
@@ -352,9 +356,10 @@
       var request = {
         method: RESTObject.HTTPMethods[method]
       };
-      if (method === Commands.READ) {
-        url += data ? serialize(data) : '';
-      } else {
+      if (params) {
+        url = serialize(url, params);
+      }
+      if (data) {
         request.headers = _fetchAjaxHeaders;
         request.body = JSON.stringify(data);
       }
@@ -371,7 +376,7 @@
     return fetchAjaxHandler;
   })();
   
-  function create(path, ajaxHandler) {
+  function create(path, ajaxHandler, proxyEnabled) {
     ajaxHandler = ajaxHandler || RESTObject.FETCH;
   
     var descriptors = [
@@ -390,7 +395,7 @@
       deleteProperty: deletePropertyHandler.bind(null, ajaxHandler)
     }, null, descriptors);
   
-    var dai = DataAccessInterface.create(descriptors, true, new FakeResourcePoolRegistry(), null);
+    var dai = DataAccessInterface.create(descriptors, proxyEnabled !== false, new FakeResourcePoolRegistry(), null);
   
     // root path
     var root = pool.set((path || typeof(path) === 'string') ? path : '/');
