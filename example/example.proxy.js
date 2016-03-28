@@ -1,7 +1,7 @@
 /**
  * Created by Oleg Galaburda on 27.03.16.
  */
-var api = RESTObject.create('/example/api', RESTObject.JQUERY);
+var api = RESTObject.create('/example/api');
 var customers = api.portal.users.customers.preventDefault();
 $(function() {
   reloadList();
@@ -27,7 +27,7 @@ $(function() {
 function reloadList() {
   $('.list tbody').empty();
   // GET /example/api/portal/users/customers -- get list of customers
-  customers.read().then(
+  customers.read(null).then(
     displayList,
     function(xhr) {
       alert('Error happened while loading customers list.');
