@@ -1,6 +1,6 @@
 # RESTObject
 
-RESTObject is the library that allows usage of comfortable dot notation instead of strings while accessing remote API. It depends on [Direct Proxies support](http://caniuse.com/proxy).   
+RESTObject is the library that allows usage of comfortable dot notation instead of strings while accessing remote API. It depends on [Direct Proxies support](http://caniuse.com/proxy) and [fetch()](http://caniuse.com/fetch) optionally.   
 To start you need to create RESTObject instance with specifying starting point of your API.  
 ```javascript
 var api = RESTObject.create('/example/api');
@@ -75,6 +75,16 @@ customers[111].delete().then(function() {
   // do something?
 });
 ```
+
+RESTObject contains [jQuery](http://api.jquery.com/jquery.ajax/) and [fetch()](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) handlers to make requests to server. You can specify custom handler as second parameter to RESTObject.create():
+```javascript
+api = RESTObject.create('/example/api', RESTObject.JQUERY);
+// or 
+api = RESTObject.create('/example/api', function(method, url, data, params, deferred) {
+// make request
+});
+```
+By default, fetch() used.
   
 Project contains working example, to make it working, start `node server` and go to [http://localhost:8081/example/index.html](http://localhost:8081/example/index.html).
 ```
