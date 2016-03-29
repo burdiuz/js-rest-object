@@ -277,6 +277,11 @@ function deletePropertyHandler(ajaxHandler, parentRequest, pack, deferred) {
   ajaxHandler(Commands.DELETE, url, pack.value, null, deferred);
 }
 
+function destroyHandler(parentRequest, pack, deferred) {
+  pool.remove(pack.target);
+  deferred.resolve();
+}
+
 /**
  * @param {Function} handler
  * @returns {Function}
@@ -369,7 +374,11 @@ function create(path, ajaxHandler, proxyEnabled) {
     CommandDescriptor.create(Commands.UPDATE, updateHandler.bind(null, ajaxHandler)),
     CommandDescriptor.create(Commands.DELETE, deleteHandler.bind(null, ajaxHandler)),
     CommandDescriptor.create(Commands.ROUTE, routeHandler),
-    CommandDescriptor.create(Commands.PREVENT_DEFAULT, preventDefault)
+    CommandDescriptor.create(Commands.PREVENT_DEFAULT, preventDefault),
+    //FIXME How to add handler not adding a property? make RequestTargetCommands like ProxyCommands with Symbol() property
+    // And it cannot be added because reserved :) fix it
+    //CommandDescriptor.create(DataAccessInterface.RequestTargetCommands.DESTROY, destroyHandler, Symbol(DataAccessInterface.RequestTargetCommands.DESTROY))
+
   ];
 
   ProxyCommands.createDescriptors({
@@ -386,6 +395,14 @@ function create(path, ajaxHandler, proxyEnabled) {
   return dai.parse(root.toJSON());
 }
 
+function getDeepestChild(target) {
+  var child;
+  while (child = RequestTarget.getLastChild(target)) {
+    target = child;
+  }
+  return target;
+}
+
 RESTObject = Object.freeze({
   create: create,
   JQUERY: jQueryAjaxHandler,
@@ -393,5 +410,6 @@ RESTObject = Object.freeze({
   Commands: Commands,
   HTTPMethods: HTTPMethods,
   DataAccessInterface: DataAccessInterface,
-  RequestTarget: DataAccessInterface.RequestTarget
+  RequestTarget: RequestTarget,
+  getDeepestChild: getDeepestChild
 });

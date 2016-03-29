@@ -1,8 +1,60 @@
 /**
  * Created by Oleg Galaburda on 27.03.16.
  */
+
+/**
+ * @callback CREATEAction
+ * @param {...Object} data
+ * @returns {APIEndpoint}
+ */
+
+/**
+ * @callback PreventDefaultAction
+ * @returns {APIEndpoint}
+ */
+
+/**
+ * @callback RouteAction
+ * @param {String} route
+ * @returns {APIEndpoint}
+ */
+
+/**
+ * @callback CRUDAction
+ * @param {Object} [body]
+ * @param {Object} [params]
+ * @returns {Promise}
+ */
+
+/**
+ * @typedef {Promise} CRUDRoute
+ * @property {CRUDAction} create
+ * @property {CRUDAction} read
+ * @property {CRUDAction} update
+ * @property {CRUDAction} delete
+ * @property {RouteAction} route
+ * @property {PreventDefaultAction} preventDefault
+ */
+
+/**
+ * @typedef {CRUDRoute|Object.<string, CRUDRoute>|CREATEAction} APIEndpoint
+ */
+
+/**
+ * Custom API description goes here:
+ * @typedef {APIEndpoint} API
+ * @property {APIEndpoint} portal.users.customers CRUD for customers
+ */
+
+/**
+ * @type {API}
+ */
 var api = RESTObject.create('/example/api');
+/**
+ * @type {CREATEAction}
+ */
 var customers = api.portal.users.customers.preventDefault();
+
 $(function() {
   reloadList();
   $('button.save').on('click', function(event) {
@@ -11,7 +63,9 @@ $(function() {
     item.id = $('form.edit').data('item').id;
     // POST /example/api/portal/users/customers/:id -- update customer info
     customers[item.id] = item;
-    reloadList();
+    RESTObject.getDeepestChild(customers).then(
+      reloadList
+    );
   });
   $('button.add').on('click', function(event) {
     event.preventDefault();
@@ -27,7 +81,7 @@ $(function() {
 function reloadList() {
   $('.list tbody').empty();
   // GET /example/api/portal/users/customers -- get list of customers
-  customers.read(null).then(
+  customers.read().then(
     displayList,
     function(xhr) {
       alert('Error happened while loading customers list.');
@@ -86,6 +140,8 @@ function deleteCustomer(item) {
   if (confirm('Delete customer?')) {
     // DELETE /example/api/portal/users/customers/:id
     delete customers[item.id];
-    $('.list tr.customer-' + item.id).remove();
+    RESTObject.getDeepestChild(customers).then(function() {
+      $('.list tr.customer-' + item.id).remove();
+    });
   }
 }

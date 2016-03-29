@@ -1,7 +1,7 @@
 {
   "name": "rest-object",
   "description": "RESTObject allows remote data access via dot notation and operations with object properties instead of classic URL based actions.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/rest-object.min.js",
   "keywords": [
     "data",
