@@ -30,6 +30,14 @@ After receiving endpoint object, you can CRUD it, each of these methods returns 
   );
 ```
 This code does exactly same GET request to `/example/api/portal/users/customers` URL.
+Or you can continue exploring depths of your API architecture madness
+```javascript
+var invoices = customers.workshops.invoices.preventDefault();
+invoices[123].then(function(data){
+  // do something with invoice data
+});
+```
+Will store endpoint for URL `example/api/portal/users/customers/workshops/invoices/123` and then make GET request.
 
 Each endpoint object overrides standard object's property actions, like get or set property value, or call method. Instead of doing something with properties endpoint object translates these actions to remote URL. For example:
 ```javascript
