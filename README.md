@@ -93,7 +93,9 @@ api = RESTObject.create('/example/api', function(method, url, data, params, defe
 });
 ```
 By default, fetch() used.
-  
+
+## Example  
+
 Project contains working example, to make it working, start `node server` and go to [http://localhost:8081/example/index.html](http://localhost:8081/example/index.html).
 ```
 bower install
