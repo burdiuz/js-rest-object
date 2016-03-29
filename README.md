@@ -1,6 +1,14 @@
 # RESTObject
 
 RESTObject is the library that allows usage of comfortable dot notation instead of strings while accessing remote API. It depends on [Direct Proxies support](http://caniuse.com/proxy) and [fetch()](http://caniuse.com/fetch) optionally.   
+
+## Installation
+Use bower or clone from GitHub.
+```
+bower install rest-object
+```
+
+## Usage
 To start you need to create RESTObject instance with specifying starting point of your API.  
 ```javascript
 var api = RESTObject.create('/example/api');
