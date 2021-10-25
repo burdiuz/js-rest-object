@@ -1,5 +1,7 @@
 # RESTObject
 
+> This repo is archived and project was moved to [Deferred Data Access monorepo](https://github.com/burdiuz/js-deferred-data-access/tree/master/packages/rest-object).
+
 RESTObject is the library that allows usage of comfortable dot notation instead of strings while accessing remote API. It depends on [Direct Proxies support](http://caniuse.com/proxy) and [fetch()](http://caniuse.com/fetch) optionally.   
 
 ## Installation
